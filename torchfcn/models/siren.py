@@ -22,8 +22,6 @@ class Siren(nn.Module):
         c = 6.0,
         is_first = False,
         use_bias = True,
-        activation = None,
-        dropout = 0.0
     ):
         super().__init__()
         self.dim_in = dim_in
@@ -35,8 +33,7 @@ class Siren(nn.Module):
 
         self.weight = nn.Parameter(weight)
         self.bias = nn.Parameter(bias) if use_bias else None
-        self.activation = Sine(w0) if activation is None else activation
-        self.dropout = nn.Dropout(dropout)
+        self.activation = Sine(w0)
 
     def init_(self, weight, bias, c, w0):
         dim = self.dim_in
@@ -50,5 +47,34 @@ class Siren(nn.Module):
     def forward(self, x):
         out = F.linear(x, self.weight, self.bias)
         out = self.activation(out)
-        out = self.dropout(out)
         return out
+    
+def calculate_shape(layer, h_in, w_in):  
+    if isinstance(layer, nn.Conv2d):
+        h_out = math.floor((h_in + 2*layer.padding[0] - layer.dilation[0]*(layer.kernel_size[0]-1) - 1)/layer.stride[0] + 1)
+        w_out = math.floor((w_in + 2*layer.padding[1] - layer.dilation[1]*(layer.kernel_size[1]-1) - 1)/layer.stride[1] + 1)
+    elif isinstance(layer, nn.MaxPool2d):
+        h_out = math.floor((h_in + 2*layer.padding - layer.dilation*(layer.kernel_size-1))/layer.stride + 1)
+        w_out = math.floor((w_in + 2*layer.padding - layer.dilation*(layer.kernel_size-1))/layer.stride + 1)
+    return h_out, w_out
+
+class SirenFCN(nn.Module):
+    def __init__(self, fcn, h_in, w_in):
+        super().__init__()
+
+        self.fcn = fcn
+        self.h_in = h_in
+        self.w_in = w_in
+
+        for k, module in dict(self.fcn.named_modules()).items():
+            if isinstance(module, nn.Conv2d) or isinstance(module, nn.MaxPool2d):
+                h_out, w_out = calculate_shape(module, h_in, w_in)
+                h_in = h_out
+                w_in = w_out
+            elif isinstance(module, nn.ReLU):
+                siren_module = Siren(w_in, w_in)
+                setattr(self.fcn, k, siren_module)
+
+    def forward(self, x):
+        x = self.fcn(x)
+        return x
