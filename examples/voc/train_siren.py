@@ -17,6 +17,14 @@ from train_fcn32s import git_hash
 here = osp.dirname(osp.abspath(__file__))
 
 
+def get_siren_parameters(model, bias=False):
+    for m in model.modules():
+        if isinstance(m, torchfcn.models.Siren):
+            if bias:
+                yield m.bias
+            else:
+                yield m.weight
+
 def main():
     fcn_models = {
         'fcn32s': torchfcn.models.FCN32s,
@@ -30,8 +38,8 @@ def main():
     parser.add_argument('-g', '--gpu', type=int, required=True, help='gpu id')
     parser.add_argument('--resume', help='checkpoint path')
     parser.add_argument('--fcn', default='fcn32s', choices=['fcn32s', 'fcn16s', 'fcn8s'])
-    parser.add_argument('-h', '--height', default=366, type=int)
-    parser.add_argument('-w', '--width', default=500, type=int)
+    parser.add_argument('--height', default=366, type=int)
+    parser.add_argument('--width', default=500, type=int)
     # configurations (same configuration as original work)
     # https://github.com/shelhamer/fcn.berkeleyvision.org
     parser.add_argument(
@@ -108,8 +116,8 @@ def main():
 
     optim = torch.optim.SGD(
         [
-            {'params': get_parameters(model, bias=False)},
-            {'params': get_parameters(model, bias=True),
+            {'params': get_siren_parameters(model, bias=False)},
+            {'params': get_siren_parameters(model, bias=True),
              'lr': args.lr * 2, 'weight_decay': 0},
         ],
         lr=args.lr,
