@@ -151,17 +151,18 @@ class Trainer(object):
         is_best = mean_iu > self.best_mean_iu
         if is_best:
             self.best_mean_iu = mean_iu
-        torch.save({
-            'epoch': self.epoch,
-            'iteration': self.iteration,
-            'arch': self.model.__class__.__name__,
-            'optim_state_dict': self.optim.state_dict(),
-            'model_state_dict': self.model.state_dict(),
-            'best_mean_iu': self.best_mean_iu,
-        }, osp.join(self.out, 'checkpoint.pth.tar'))
-        if is_best:
-            shutil.copy(osp.join(self.out, 'checkpoint.pth.tar'),
-                        osp.join(self.out, 'model_best.pth.tar'))
+        if self.optim is not None:
+            torch.save({
+                'epoch': self.epoch,
+                'iteration': self.iteration,
+                'arch': self.model.__class__.__name__,
+                'optim_state_dict': self.optim.state_dict(),
+                'model_state_dict': self.model.state_dict(),
+                'best_mean_iu': self.best_mean_iu,
+            }, osp.join(self.out, 'checkpoint.pth.tar'))
+            if is_best:
+                shutil.copy(osp.join(self.out, 'checkpoint.pth.tar'),
+                            osp.join(self.out, 'model_best.pth.tar'))
 
         if training:
             self.model.train()

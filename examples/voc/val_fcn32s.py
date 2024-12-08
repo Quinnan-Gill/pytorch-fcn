@@ -103,15 +103,7 @@ def main():
 
     # 3. optimizer
 
-    optim = optim = torch.optim.SGD(
-        [
-            {'params': get_parameters(model, bias=False)},
-            {'params': get_parameters(model, bias=True),
-             'lr': args.lr * 2, 'weight_decay': 0},
-        ],
-        lr=args.lr,
-        momentum=args.momentum,
-        weight_decay=args.weight_decay)
+    optim = None
 
     trainer = torchfcn.Trainer(
         cuda=cuda,
