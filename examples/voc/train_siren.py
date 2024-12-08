@@ -62,13 +62,14 @@ def main():
     parser.add_argument(
         '--momentum', type=float, default=0.99, help='momentum',
     )
+    parser.add_argument('-o', '--out', type=str, default=here)
     args = parser.parse_args()
 
     args.model = 'Siren'
     args.git_hash = git_hash()
 
     now = datetime.datetime.now()
-    args.out = osp.join(here, 'logs', now.strftime('%Y%m%d_%H%M%S.%f'))
+    args.out = osp.join(args.out, 'siren', now.strftime('%Y%m%d_%H%M%S.%f'))
 
     os.makedirs(args.out)
     with open(osp.join(args.out, 'config.yaml'), 'w') as f:
@@ -83,14 +84,15 @@ def main():
 
     # 1. dataset
 
+    resize = (args.height, args.width)
     root = osp.expanduser('~/data/datasets')
     kwargs = {'num_workers': 4, 'pin_memory': True} if cuda else {}
     train_loader = torch.utils.data.DataLoader(
-        torchfcn.datasets.SBDClassSeg(root, split='train', transform=True),
+        torchfcn.datasets.SBDClassSeg(root, split='train', transform=True, resize=resize),
         batch_size=1, shuffle=True, **kwargs)
     val_loader = torch.utils.data.DataLoader(
         torchfcn.datasets.VOC2011ClassSeg(
-            root, split='seg11valid', transform=True),
+            root, split='seg11valid', transform=True, resize=resize),
         batch_size=1, shuffle=False, **kwargs)
 
     # 2. model

@@ -36,6 +36,8 @@ def main():
     )
     parser.add_argument('-g', '--gpu', type=int, required=True, help='gpu id')
     parser.add_argument('-o', '--out', type=str, default=here)
+    parser.add_argument('--height', default=366, type=int)
+    parser.add_argument('--width', default=500, type=int)
     parser.add_argument('--fcn', default='fcn32s', choices=['fcn32s', 'fcn16s', 'fcn8s'])
     # configurations (same configuration as original work)
     # https://github.com/shelhamer/fcn.berkeleyvision.org
@@ -63,9 +65,10 @@ def main():
     root = osp.expanduser('~/data/datasets')
     kwargs = {'num_workers': 4, 'pin_memory': True} if cuda else {}
     train_loader = None
+    resize = (args.height, args.width)
     val_loader = torch.utils.data.DataLoader(
         torchfcn.datasets.VOC2011ClassSeg(
-            root, split='seg11valid', transform=True),
+            root, split='seg11valid', transform=True, resize=resize),
         batch_size=1, shuffle=False, **kwargs)
 
     # 2. model
