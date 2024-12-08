@@ -56,6 +56,7 @@ def main():
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument('-g', '--gpu', type=int, required=True, help='gpu id')
+    parser.add_argument('-o', '--out', type=str, default=here)
     # configurations (same configuration as original work)
     # https://github.com/shelhamer/fcn.berkeleyvision.org
     args = parser.parse_args()
@@ -64,7 +65,7 @@ def main():
     args.git_hash = git_hash()
 
     now = datetime.datetime.now()
-    args.out = osp.join(here, 'logs', now.strftime('%Y%m%d_%H%M%S.%f'))
+    args.out = osp.join(args.out, 'logs', now.strftime('%Y%m%d_%H%M%S.%f'))
 
     os.makedirs(args.out)
     with open(osp.join(args.out, 'config.yaml'), 'w') as f:
