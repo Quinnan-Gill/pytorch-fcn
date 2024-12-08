@@ -91,7 +91,8 @@ def main():
     # 2. model
 
     model = torchfcn.models.FCN32s(n_class=21)
-    state_dict = torchfcn.models.FCN32s.download()
+    args.pretrained_model = torchfcn.models.FCN32s.download()
+    state_dict = torch.load(args.pretrained_model)
     try:
         model.load_state_dict(state_dict)
     except RuntimeError:
