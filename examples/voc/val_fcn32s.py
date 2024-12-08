@@ -112,7 +112,7 @@ def main():
         train_loader=train_loader,
         val_loader=val_loader,
         out=args.out,
-        max_iter=None,
+        max_epochs=5,
         interval_validate=4000,
     )
     trainer.validate()
