@@ -8,6 +8,7 @@ import PIL.Image
 import scipy.io
 import torch
 from torch.utils import data
+from torchvision import transforms as T
 
 
 class VOCClassSegBase(data.Dataset):
@@ -37,10 +38,11 @@ class VOCClassSegBase(data.Dataset):
     ])
     mean_bgr = np.array([104.00698793, 116.66876762, 122.67891434])
 
-    def __init__(self, root, split='train', transform=False):
+    def __init__(self, root, split='train', transform=False, resize=None):
         self.root = root
         self.split = split
         self._transform = transform
+        self.resize = resize
 
         # VOC2011 and others are subset of VOC2012
         dataset_dir = osp.join(self.root, 'VOC/VOCdevkit/VOC2012')
@@ -72,10 +74,22 @@ class VOCClassSegBase(data.Dataset):
         lbl = PIL.Image.open(lbl_file)
         lbl = np.array(lbl, dtype=np.int32)
         lbl[lbl == 255] = -1
-        if self._transform:
+        if self.resize is not None and self._transform:
+            img, lbl = self.transform(img, lbl)
+            img, lbl = self.resize_img(img, lbl, self.resize)
+            return img, lbl
+        elif self._transform:
             return self.transform(img, lbl)
         else:
             return img, lbl
+
+    def resize_img(self, img, lbl, resize):
+        _, img_h, img_w = img.shape
+        _, resize_w = resize
+        ratio = img_h / img_w
+        resize_h = int(resize_w * ratio)
+        img_resize = T.Resize((resize_h, resize_w))
+        return img_resize(img), img_resize(lbl.unsqueeze(0)).squeeze(0)
 
     def transform(self, img, lbl):
         img = img[:, :, ::-1]  # RGB -> BGR
@@ -98,9 +112,9 @@ class VOCClassSegBase(data.Dataset):
 
 class VOC2011ClassSeg(VOCClassSegBase):
 
-    def __init__(self, root, split='train', transform=False):
+    def __init__(self, root, split='train', transform=False, resize=None):
         super(VOC2011ClassSeg, self).__init__(
-            root, split=split, transform=transform)
+            root, split=split, transform=transform, resize=resize)
         pkg_root = osp.join(osp.dirname(osp.realpath(__file__)), '..')
         imgsets_file = osp.join(
             pkg_root, 'ext/fcn.berkeleyvision.org',
@@ -117,9 +131,9 @@ class VOC2012ClassSeg(VOCClassSegBase):
 
     url = 'http://host.robots.ox.ac.uk/pascal/VOC/voc2012/VOCtrainval_11-May-2012.tar'  # NOQA
 
-    def __init__(self, root, split='train', transform=False):
+    def __init__(self, root, split='train', transform=False, resize=None):
         super(VOC2012ClassSeg, self).__init__(
-            root, split=split, transform=transform)
+            root, split=split, transform=transform, resize=resize)
 
 
 class SBDClassSeg(VOCClassSegBase):
@@ -127,10 +141,11 @@ class SBDClassSeg(VOCClassSegBase):
     # XXX: It must be renamed to benchmark.tar to be extracted.
     url = 'http://www.eecs.berkeley.edu/Research/Projects/CS/vision/grouping/semantic_contours/benchmark.tgz'  # NOQA
 
-    def __init__(self, root, split='train', transform=False):
+    def __init__(self, root, split='train', transform=False, resize=None):
         self.root = root
         self.split = split
         self._transform = transform
+        self.resize = resize
 
         dataset_dir = osp.join(self.root, 'VOC/benchmark_RELEASE/dataset')
         self.files = collections.defaultdict(list)
@@ -156,7 +171,11 @@ class SBDClassSeg(VOCClassSegBase):
         mat = scipy.io.loadmat(lbl_file)
         lbl = mat['GTcls'][0]['Segmentation'][0].astype(np.int32)
         lbl[lbl == 255] = -1
-        if self._transform:
+        if self.resize is not None and self._transform:
+            img, lbl = self.transform(img, lbl)
+            img, lbl = self.resize_img(img, lbl, self.resize)
+            return img, lbl
+        elif self._transform:
             return self.transform(img, lbl)
         else:
             return img, lbl

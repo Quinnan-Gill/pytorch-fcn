@@ -17,37 +17,12 @@ from train_fcn32s import git_hash
 here = osp.dirname(osp.abspath(__file__))
 
 
-def get_siren_parameters(model, bias=False):
-    for m in model.modules():
-        if isinstance(m, torchfcn.models.Siren):
-            if bias:
-                yield m.bias
-            else:
-                yield m.weight
-
-def freeze_non_siren_params(model):
-    for m in model.modules():
-        if not isinstance(m, torchfcn.models.Siren):
-            if hasattr(m, 'weight'):
-                m.weight.requires_grad = False
-
-    return model
-
 def main():
-    fcn_models = {
-        'fcn32s': torchfcn.models.FCN32s,
-        'fcn16s': torchfcn.models.FCN16s,
-        'fcn8s': torchfcn.models.FCN8s,
-    }
-
     parser = argparse.ArgumentParser(
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument('-g', '--gpu', type=int, required=True, help='gpu id')
     parser.add_argument('--resume', help='checkpoint path')
-    parser.add_argument('--fcn', default='fcn32s', choices=['fcn32s', 'fcn16s', 'fcn8s'])
-    parser.add_argument('--height', default=366, type=int)
-    parser.add_argument('--width', default=500, type=int)
     # configurations (same configuration as original work)
     # https://github.com/shelhamer/fcn.berkeleyvision.org
     parser.add_argument(
@@ -62,9 +37,14 @@ def main():
     parser.add_argument(
         '--momentum', type=float, default=0.99, help='momentum',
     )
+    parser.add_argument(
+        '--pretrained-model',
+        default=torchfcn.models.FCN32s.download(),
+        help='pretrained model of FCN32s',
+    )
     args = parser.parse_args()
 
-    args.model = 'Siren'
+    args.model = 'FCN16s'
     args.git_hash = git_hash()
 
     now = datetime.datetime.now()
@@ -95,36 +75,33 @@ def main():
 
     # 2. model
 
+    model = torchfcn.models.FCN16s(n_class=21)
     start_epoch = 0
     start_iteration = 0
-
-    model = None
-
     if args.resume:
-        fcn_model = fcn_models[args.fcn]()
-        model = torchfcn.models.SirenFCN(fcn_model, args.height, args.width)
         checkpoint = torch.load(args.resume)
         model.load_state_dict(checkpoint['model_state_dict'])
         start_epoch = checkpoint['epoch']
         start_iteration = checkpoint['iteration']
     else:
-        fcn_model = fcn_models[args.fcn]()
-        pretrained_model = fcn_models[args.fcn].download()
-        state_dict = torch.load(pretrained_model)
+        fcn32s = torchfcn.models.FCN32s()
+        state_dict = torch.load(args.pretrained_model)
         try:
-            fcn_model.load_state_dict(state_dict)
+            fcn32s.load_state_dict(state_dict)
         except RuntimeError:
-            fcn_model.load_state_dict(state_dict['model_state_dict'])
-        model = torchfcn.models.SirenFCN(fcn_model, args.height, args.width)
-
+            fcn32s.load_state_dict(state_dict['model_state_dict'])
+        model.copy_params_from_fcn32s(fcn32s)
     if cuda:
         model = model.cuda()
 
-    model = freeze_non_siren_params(model)
     # 3. optimizer
 
     optim = torch.optim.SGD(
-        model.parameters(),
+        [
+            {'params': get_parameters(model, bias=False)},
+            {'params': get_parameters(model, bias=True),
+             'lr': args.lr * 2, 'weight_decay': 0},
+        ],
         lr=args.lr,
         momentum=args.momentum,
         weight_decay=args.weight_decay)

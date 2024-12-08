@@ -43,7 +43,7 @@ def cross_entropy2d(input, target, weight=None, size_average=True):
 class Trainer(object):
 
     def __init__(self, cuda, model, optimizer,
-                 train_loader, val_loader, out, max_iter,
+                 train_loader, val_loader, out, max_epochs,
                  size_average=False, interval_validate=None):
         self.cuda = cuda
 
@@ -86,8 +86,8 @@ class Trainer(object):
                 f.write(','.join(self.log_headers) + '\n')
 
         self.epoch = 0
+        self.max_epochs = max_epochs
         self.iteration = 0
-        self.max_iter = max_iter
         self.best_mean_iu = 0
 
     def validate(self):
@@ -179,9 +179,6 @@ class Trainer(object):
                 continue  # for resuming
             self.iteration = iteration
 
-            if self.iteration % self.interval_validate == 0:
-                self.validate()
-
             assert self.model.training
 
             if self.cuda:
@@ -217,14 +214,11 @@ class Trainer(object):
                 log = map(str, log)
                 f.write(','.join(log) + '\n')
 
-            if self.iteration >= self.max_iter:
-                break
-
     def train(self):
-        max_epoch = int(math.ceil(1. * self.max_iter / len(self.train_loader)))
+        max_epoch = self.max_epochs
         for epoch in tqdm.trange(self.epoch, max_epoch,
                                  desc='Train', ncols=80):
             self.epoch = epoch
             self.train_epoch()
-            if self.iteration >= self.max_iter:
-                break
+
+            self.validate()
