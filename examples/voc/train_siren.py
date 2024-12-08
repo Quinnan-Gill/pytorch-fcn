@@ -51,7 +51,7 @@ def main():
     # configurations (same configuration as original work)
     # https://github.com/shelhamer/fcn.berkeleyvision.org
     parser.add_argument(
-        '--max-iteration', type=int, default=100000, help='max iteration'
+        '--epochs', type=int, default=5, help='# of epochs to train'
     )
     parser.add_argument(
         '--lr', type=float, default=1.0e-12, help='learning rate',
@@ -140,8 +140,7 @@ def main():
         train_loader=train_loader,
         val_loader=val_loader,
         out=args.out,
-        max_iter=args.max_iteration,
-        interval_validate=4000,
+        max_epochs=args.epochs,
     )
     trainer.epoch = start_epoch
     trainer.iteration = start_iteration
