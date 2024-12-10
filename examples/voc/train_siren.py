@@ -69,7 +69,7 @@ def main():
     args.git_hash = git_hash()
 
     now = datetime.datetime.now()
-    args.out = osp.join(args.out, 'siren', now.strftime('%Y%m%d_%H%M%S.%f'))
+    args.out = osp.join(args.out, 'siren', args.fcn, now.strftime('%Y%m%d_%H%M%S.%f'))
 
     os.makedirs(args.out)
     with open(osp.join(args.out, 'config.yaml'), 'w') as f:

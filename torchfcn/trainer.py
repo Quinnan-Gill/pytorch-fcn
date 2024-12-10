@@ -206,14 +206,14 @@ class Trainer(object):
             metrics.append((acc, acc_cls, mean_iu, fwavacc))
             metrics = np.mean(metrics, axis=0)
 
-            with open(osp.join(self.out, 'log.csv'), 'a') as f:
-                elapsed_time = (
-                    datetime.datetime.now(pytz.timezone('Asia/Tokyo')) -
-                    self.timestamp_start).total_seconds()
-                log = [self.epoch, self.iteration] + [loss_data] + \
-                    metrics.tolist() + [''] * 5 + [elapsed_time]
-                log = map(str, log)
-                f.write(','.join(log) + '\n')
+            # with open(osp.join(self.out, 'log.csv'), 'a') as f:
+            #     elapsed_time = (
+            #         datetime.datetime.now(pytz.timezone('Asia/Tokyo')) -
+            #         self.timestamp_start).total_seconds()
+            #     log = [self.epoch, self.iteration] + [loss_data] + \
+            #         metrics.tolist() + [''] * 5 + [elapsed_time]
+            #     log = map(str, log)
+            #     f.write(','.join(log) + '\n')
 
     def train(self):
         max_epoch = self.max_epochs
