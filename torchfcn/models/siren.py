@@ -2,6 +2,7 @@ import math
 import torch
 from torch import nn
 import torch.nn.functional as F
+from typing import Optional, List
 
 def exists(val):
     return val is not None
@@ -59,21 +60,32 @@ def calculate_shape(layer, h_in, w_in):
     return h_out, w_out
 
 class SirenFCN(nn.Module):
-    def __init__(self, fcn, h_in, w_in):
+    def __init__(self, fcn, h_in, w_in, filters: Optional[List] =None):
         super().__init__()
 
         self.fcn = fcn
         self.h_in = h_in
         self.w_in = w_in
+        self.filters = filters
 
         for k, module in dict(self.fcn.named_modules()).items():
             if isinstance(module, nn.Conv2d) or isinstance(module, nn.MaxPool2d):
                 h_out, w_out = calculate_shape(module, h_in, w_in)
                 h_in = h_out
                 w_in = w_out
-            elif isinstance(module, nn.ReLU):
+            elif isinstance(module, nn.ReLU) and self.apply_filter(k):
                 siren_module = Siren(w_in, w_in)
                 setattr(self.fcn, k, siren_module)
+
+    def apply_filter(self, model_layer):
+        # if there are no filters always return true
+        if self.filters is None:
+            return True
+        
+        if model_layer in self.filters:
+            return True
+        
+        return False
 
     def forward(self, x):
         x = self.fcn(x)

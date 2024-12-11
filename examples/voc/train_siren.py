@@ -48,6 +48,7 @@ def main():
     parser.add_argument('--fcn', default='fcn32s', choices=['fcn32s', 'fcn16s', 'fcn8s'])
     parser.add_argument('--height', default=366, type=int)
     parser.add_argument('--width', default=500, type=int)
+    parser.add_argument('--filters', type=str, default=None, help='comma seperated list of all the ReLUs to convert to SIRENs')
     # configurations (same configuration as original work)
     # https://github.com/shelhamer/fcn.berkeleyvision.org
     parser.add_argument(
@@ -67,6 +68,7 @@ def main():
 
     args.model = 'Siren'
     args.git_hash = git_hash()
+    args.filters = args.filters.split(',')
 
     now = datetime.datetime.now()
     args.out = osp.join(args.out, 'siren', args.fcn, now.strftime('%Y%m%d_%H%M%S.%f'))
@@ -104,7 +106,8 @@ def main():
 
     if args.resume:
         fcn_model = fcn_models[args.fcn]()
-        model = torchfcn.models.SirenFCN(fcn_model, args.height, args.width)
+        model = torchfcn.models.SirenFCN(
+            fcn_model, args.height, args.width, filters=args.filters)
         checkpoint = torch.load(args.resume)
         model.load_state_dict(checkpoint['model_state_dict'])
         start_epoch = checkpoint['epoch']
@@ -117,7 +120,8 @@ def main():
             fcn_model.load_state_dict(state_dict)
         except RuntimeError:
             fcn_model.load_state_dict(state_dict['model_state_dict'])
-        model = torchfcn.models.SirenFCN(fcn_model, args.height, args.width)
+        model = torchfcn.models.SirenFCN(
+            fcn_model, args.height, args.width, filters=args.filters)
 
     if cuda:
         model = model.cuda()
