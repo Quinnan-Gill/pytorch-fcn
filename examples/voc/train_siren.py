@@ -30,7 +30,6 @@ def freeze_non_siren_params(model):
         if not isinstance(m, torchfcn.models.Siren):
             if hasattr(m, 'weight'):
                 m.weight.requires_grad = False
-
     return model
 
 def main():
