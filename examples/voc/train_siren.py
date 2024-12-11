@@ -67,7 +67,8 @@ def main():
 
     args.model = 'Siren'
     args.git_hash = git_hash()
-    args.filters = args.filters.split(',') if args.filters is not None
+    if args.filters is not None:
+        args.filters = args.filters.split(',') 
 
     now = datetime.datetime.now()
     args.out = osp.join(args.out, 'siren', args.fcn, now.strftime('%Y%m%d_%H%M%S.%f'))
