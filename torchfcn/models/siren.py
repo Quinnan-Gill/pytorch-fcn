@@ -90,3 +90,18 @@ class SirenFCN(nn.Module):
     def forward(self, x):
         x = self.fcn(x)
         return x
+
+class SirenAndFcn(nn.Module):
+    def __init__(self, fcn, h_in, w_in):
+        super().__init__()
+
+        self.fcn = fcn
+        self.h_in = h_in
+        self.w_in = w_in
+
+        self.siren = Siren(w_in, w_in)
+
+    def forward(self, x):
+        x = self.fcn(x)
+        x = self.siren(x)
+        return x

@@ -4,4 +4,4 @@ from .fcn16s import FCN16s
 from .fcn8s import FCN8s
 from .fcn8s import FCN8sAtOnce
 from .vgg import VGG16
-from .siren import Siren, SirenFCN
+from .siren import Siren, SirenFCN, SirenAndFcn
