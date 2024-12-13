@@ -39,7 +39,7 @@ class Siren(nn.Module):
     def init_(self, weight, bias, c, w0):
         dim = self.dim_in
 
-        w_std = (1 / dim) if self.is_first else (math.sqrt(c / dim) / w0)
+        w_std = (1 / math.sqrt(dim)) if self.is_first else (math.sqrt(c / dim) / w0)
         weight.uniform_(-w_std, w_std)
 
         if exists(bias):
