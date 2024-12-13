@@ -1,12 +1,3 @@
-# pytorch-fcn
-
-[![PyPI Version](https://img.shields.io/pypi/v/torchfcn.svg)](https://pypi.python.org/pypi/torchfcn)
-[![Python Versions](https://img.shields.io/pypi/pyversions/torchfcn.svg)](https://pypi.org/project/torchfcn)
-[![GitHub Actions](https://github.com/wkentaro/pytorch-fcn/workflows/CI/badge.svg)](https://github.com/wkentaro/pytorch-fcn/actions)
-
-PyTorch implementation of [Fully Convolutional Networks](https://github.com/shelhamer/fcn.berkeleyvision.org).
-
-
 ## Requirements
 
 - [pytorch](https://github.com/pytorch/pytorch) >= 0.2.0
@@ -20,13 +11,9 @@ PyTorch implementation of [Fully Convolutional Networks](https://github.com/shel
 ## Installation
 
 ```bash
-git clone https://github.com/wkentaro/pytorch-fcn.git
+git clone https://github.com/Quinnan-Gill/pytorch-fcn
 cd pytorch-fcn
 pip install .
-
-# or
-
-pip install torchfcn
 ```
 
 
@@ -35,28 +22,10 @@ pip install torchfcn
 See [VOC example](examples/voc).
 
 
-## Accuracy
 
-At `10fdec9`.
+## Citation
 
-| Model | Implementation |   epoch |   iteration | Mean IU | Pretrained Model |
-|:-----:|:--------------:|:-------:|:-----------:|:-------:|:----------------:|
-|FCN32s      | [Original](https://github.com/shelhamer/fcn.berkeleyvision.org/tree/main/voc-fcn32s)       | - | -     | **63.63** | [Download](https://github.com/wkentaro/pytorch-fcn/blob/45c6b2d3f553cbe6369822d17a7a51dfe9328662/torchfcn/models/fcn32s.py#L34) |
-|FCN32s      | Ours                                                                                         |11 | 96000 | 62.84 | |
-|FCN16s      | [Original](https://github.com/shelhamer/fcn.berkeleyvision.org/tree/main/voc-fcn16s)       | - | -     | **65.01** | [Download](https://github.com/wkentaro/pytorch-fcn/blob/45c6b2d3f553cbe6369822d17a7a51dfe9328662/torchfcn/models/fcn16s.py#L17) |
-|FCN16s      | Ours                                                                                         |11 | 96000 | 64.91 | |
-|FCN8s       | [Original](https://github.com/shelhamer/fcn.berkeleyvision.org/tree/main/voc-fcn8s)        | - | -     | **65.51** | [Download](https://github.com/wkentaro/pytorch-fcn/blob/45c6b2d3f553cbe6369822d17a7a51dfe9328662/torchfcn/models/fcn8s.py#L17) |
-|FCN8s       | Ours                                                                                         | 7 | 60000 | 65.49 | |
-|FCN8sAtOnce | [Original](https://github.com/shelhamer/fcn.berkeleyvision.org/tree/main/voc-fcn8s-atonce) | - | -     | **65.40** | |
-|FCN8sAtOnce | Ours                                                                                         |11 | 96000 | 64.74 | |
-
-<img src=".readme/fcn8s_iter28000.jpg" width="50%" />
-Visualization of validation result of FCN8s.
-
-
-## Cite This Project
-
-If you use this project in your research or wish to refer to the baseline results published in the README, please use the following BibTeX entry.
+This project was extended from:
 
 ```bash
 @misc{pytorch-fcn2017,
